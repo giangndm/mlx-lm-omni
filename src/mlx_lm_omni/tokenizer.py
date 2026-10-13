@@ -85,8 +85,10 @@ class ExtendedEmbedding(Module):
         """
         return x @ self.weight.T
 
-    def to_quantized(self, group_size: int = 64, bits: int = 4):
+    def to_quantized(self, group_size: int = 64, bits: int = 4, mode: str = "affine"):
         """Return a :obj:`QuantizedEmbedding` layer that approximates this embedding layer."""
+        if mode != "affine":
+            raise ValueError("Extended embeddings support only affine quantization")
         return ExtendedQuantizedEmbedding.from_embedding(self, group_size, bits)
     
     def embed_audio_chunk(self, audio_embeddings: mx.array) -> list[int]:

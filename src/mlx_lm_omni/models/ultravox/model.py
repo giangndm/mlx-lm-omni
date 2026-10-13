@@ -4,9 +4,10 @@ import mlx.core as mx
 from dataclasses import dataclass
 
 from mlx_lm.tokenizer_utils import TokenizerWrapper, StreamingDetokenizer
-from mlx_lm.utils import load_model, get_model_path
+from mlx_lm.utils import load_model
 
 from mlx_lm_omni.audio_mel import AudioMel, AudioMelConfig
+from mlx_lm_omni.model_path import get_model_path
 from mlx_lm_omni.tokenizer import ExtendedEmbedding, ExtendedTokenizer, replace_slice
 
 from .audio_tower import AudioTower, AudioTowerArgs

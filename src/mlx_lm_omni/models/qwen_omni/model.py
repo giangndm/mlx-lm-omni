@@ -33,7 +33,24 @@ class Model(nn.Module):
     
     def __call__(self, inputs: mx.array, cache = None) -> mx.array:
         return self.thinker(inputs, cache=cache)
-    
+
+    def sanitize(self, weights: dict[str, mx.array]) -> dict[str, mx.array]:
+        """Convert checkpoint convolution layout before modern weight loading."""
+        # New MLX weight loading no longer invokes the tower's update override.
+        # Preserve its PyTorch-to-MLX conversion at the loader's sanitize boundary.
+        for name in ("conv1", "conv2"):
+            key = f"thinker.audio_tower.{name}.weight"
+            if key not in weights:
+                continue
+            expected = getattr(self.thinker.audio_tower, name).weight.shape
+            if weights[key].shape == (expected[0], expected[2], expected[1]):
+                weights[key] = mx.swapaxes(weights[key], 1, 2)
+            if weights[key].shape != expected:
+                raise ValueError(
+                    f"Unexpected convolution shape for {key}: {weights[key].shape}"
+                )
+        return weights
+
     def build_custom_tokenizer(self, tokenizer: TokenizerWrapper) -> ExtendedTokenizer:
         return TokenizerWithAudio(self.thinker.audio_tower, tokenizer, self.thinker.model.embed_tokens)
 
